@@ -36,13 +36,15 @@ This assignment makes use of data from a personal activity monitoring device. Th
 #Loading and preprocessing the data
 First, to ensure the environment is clean we run the below R code to clear the environment.
 
-```{r, echo=TRUE}
+
+```r
 rm(list=ls(all=TRUE)) 
 ```
 
 Next, we'll load the data with R and a temp file.
 
-```{r, echo=TRUE}
+
+```r
 #Create a temp file for the zip file
 temp <- tempfile()
 
@@ -63,16 +65,20 @@ The data form the CSV file now resides in the "actraw" variable.
 ###Make a histogram of the total number of steps taken each day
 We can now create a histogram based on our data for the frequency of the number of steps per day.
 
-```{r, echo=TRUE}
+
+```r
 #Create the histogram
 hist(tapply(actraw$steps, actraw$date, sum), breaks=20, main="Frequecy of the Total Number of Steps by Day", xlab="Total number of steps", xlim=c(0,25000), col="yellow")
 ```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-3-1.png" title="" alt="" width="672" />
 
 ###Calculate and report the mean and median total number of steps taken per day
 
 For this we'll need to sum the number of steps by day, and then use the resulting dataset to determine the mean and median.
 
-```{r, echo=TRUE}
+
+```r
 #Sum by day and convert to numeric
 daily_steps <- as.numeric(tapply(actraw$steps, actraw$date, sum))
 
@@ -80,7 +86,18 @@ daily_steps <- as.numeric(tapply(actraw$steps, actraw$date, sum))
 daily_mean <- round(mean(daily_steps, na.rm=TRUE))
 daily_median <- round(median(daily_steps, na.rm=TRUE))
 daily_mean
+```
+
+```
+## [1] 10766
+```
+
+```r
 daily_median
+```
+
+```
+## [1] 10765
 ```
 
 #What is the average daily activity pattern?
@@ -89,7 +106,8 @@ daily_median
 
 For this question we'll create a data frame for the data, and use plot to display the results.
 
-```{r, echo=TRUE}
+
+```r
 #Create a factor on interval so we can use it in a data frame shortly
 actraw$interval <- as.factor(as.character(actraw$interval))
 
@@ -107,16 +125,24 @@ plot(interval_data$intervals, interval_data$interval_mean, type = "l", main = "A
 axis(side = 1, at = seq(0, 2400,400), labels = c("00:00", "04:00", "08:00", "12:00", "16:00","20:00","24:00"))
 ```
 
+<img src="PA1_template_files/figure-html/unnamed-chunk-5-1.png" title="" alt="" width="672" />
+
 ###Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 To determine this we can use the data frame we created, change the sort to descending based on the mean, and then display the first value.
 
-```{r, echo=TRUE}
+
+```r
 #Sort the mean interval data by descending order
 interval_desc <- interval_data[order(interval_data$interval_mean, decreasing = TRUE),]
 
 #Get the top values
 head(interval_desc, 1)
+```
+
+```
+##     intervals interval_mean
+## 272       835      206.1698
 ```
 
 #Imputing missing values
@@ -125,9 +151,14 @@ head(interval_desc, 1)
 
 For this requirement we can use the DIM function to quickly go through our raw data and determine how many values are set to NA
 
-```{r, echo=TRUE}
+
+```r
 #Dim to determine NA count
 dim(actraw[is.na(actraw$steps),])[1]
+```
+
+```
+## [1] 2304
 ```
 
 ###Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -138,7 +169,8 @@ The strategy we'll use to fill in the missing values will be to use the average 
 
 The below code will create a new dataset, act_nona, based on the strategy above.
 
-```{r, echo=TRUE}
+
+```r
 #Create a loop to go through and update all the NA values 
 steps <- vector()
 for (i in 1:dim(actraw)[1]) {
@@ -151,21 +183,22 @@ for (i in 1:dim(actraw)[1]) {
 
 
 act_nona <- data.frame(steps = steps, date = actraw$date, interval = actraw$interval)
-
-
 ```
 
 ###Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-```{r, echo=TRUE}
+
+```r
 #create the histogram
 hist(tapply(act_nona$steps, act_nona$date, sum), xlab = "Total Daily Steps", breaks = 20, main = "Frequency of Total Steps Taken per Day no NA", xlim = c(0,25000), ylim = c(0,20), col = "cyan")
-
 ```
 
+<img src="PA1_template_files/figure-html/unnamed-chunk-9-1.png" title="" alt="" width="672" />
 
-```{r, echo=TRUE}
+
+
+```r
 #Sum by day and convert to numeric
 daily_steps_v2 <- as.numeric(tapply(act_nona$steps, act_nona$date, sum))
 
@@ -173,7 +206,18 @@ daily_steps_v2 <- as.numeric(tapply(act_nona$steps, act_nona$date, sum))
 daily_mean <- round(mean(daily_steps_v2, na.rm=TRUE))
 daily_median <- round(median(daily_steps_v2, na.rm=TRUE))
 daily_mean
+```
+
+```
+## [1] 10766
+```
+
+```r
 daily_median
+```
+
+```
+## [1] 10766
 ```
 
 The Mean and Median are displayed and both should be 10,766. There is little impact to the mean and median, and only a slight impact to the histogram when imputing the missing data.  The histograms are still very similar and we do see an increase in the number of times the average is hit.  The overall distribution is the same though. Due to the method we chose the numbers won't change drastically as we're using averages.
@@ -186,7 +230,8 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 We'll add the day type based on the date column, and then create the factor as we did before.
 
-```{r, echo = TRUE}
+
+```r
 #Adding the day_type and making it a factor
 act_nona$day_type <- c("weekend", "weekday", "weekday", "weekday", "weekday", "weekday", "weekend")[as.POSIXlt(act_nona$date)$wday + 1]
 act_nona$day_type <- as.factor(act_nona$day_type)
@@ -201,7 +246,6 @@ intervals_dt <- data.frame(intervals = as.numeric(levels(actraw$interval)), week
 
 #ordering the dataframe
 intervals_dt <- intervals_dt[order(intervals_dt$intervals),  ]
-
 ```
 
 
@@ -209,12 +253,14 @@ intervals_dt <- intervals_dt[order(intervals_dt$intervals),  ]
 
 I combined the weekday and weekends into a single plot as this question is designed as a comparison.  Although you can compare two seperate plots like in the ReadMe file, it is a bit easier when they are on the same plot.
 
-```{r, echo=TRUE}
+
+```r
 #Creating a plot for the Weekday and Weekend comparison
 plot(intervals_dt$intervals, intervals_dt$weekday_means, type = "l", col = "red", ylab = "Average steps", xlab = "Time of day", main = "Step Comparison Between Weekdays and Weekends", xaxt = "n")
 axis(side = 1, at = seq(0, 2400,400), labels = c("00:00", "04:00", "08:00", "12:00", "16:00","20:00","24:00"))
 lines(intervals_dt$intervals, intervals_dt$weekend_means, type = "l", col = "blue")
 legend(1500, 230, c("Weekend", "Weekday "), lty = c(1, 1), lwd = c(1, 1), col = c("blue", "red"))
-
 ```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-12-1.png" title="" alt="" width="672" />
 
